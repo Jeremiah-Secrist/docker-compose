@@ -1,12 +1,27 @@
 # syntax=docker/dockerfile:1
-FROM python:3.7-alpine
-WORKDIR /code
-ENV FLASK_APP="app.py"
+# ideally we would build from scratch here.
+FROM python:3.7-alpine 
+
+#declare out environment variables
+ENV FLASK_APP="helloworld.py"
 ENV FLASK_RUN_HOST="0.0.0.0"
 ENV FLASK_RUN_PORT="80"
+
+# keep run tasks to a minimum
 RUN apk add --no-cache gcc musl-dev linux-headers
+# this allows us to cache our build requirements
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
-EXPOSE "${ENV_FLASK_RUN_PORT}"
+
+#setup our non root user
+RUN addgroup -S appgroup && adduser -S python -G appgroup
+
+# scope out our application
+WORKDIR /code
+
+# switch to non root user
+USER python
+EXPOSE $ENV_FLASK_RUN_PORT
 COPY . .
+RUN sha512sum -c sums/* 
 CMD ["flask", "run"]
