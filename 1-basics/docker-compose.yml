@@ -1,4 +1,8 @@
-version: "3"
+version: "3.9"
 services:
-  helloworld:
+  web:
     build: .
+    ports:
+      - "8000:80"
+  redis:
+    image: "redis:alpine"
